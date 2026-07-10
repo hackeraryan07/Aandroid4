@@ -25,11 +25,19 @@ jobs:
         with:
           gradle-version: '7.6.4'
 
-      - name: Build Debug APK (minSdkVersion 14 - Android 4.0+)
-        run: gradle assembleDebug
+      - name: Decode DEBUG_KEY keystore
+        run: echo "${{ secrets.DEBUG_KEY }}" | base64 -d > $GITHUB_WORKSPACE/debug.keystore
 
-      - name: Upload Debug APK
+      - name: Build Signed APK (minSdkVersion 14 - Android 4.0+)
+        env:
+          KEYSTORE_PATH: ${{ github.workspace }}/debug.keystore
+          KEYSTORE_PASS: android
+          KEY_ALIAS: androiddebugkey
+          KEY_PASS: android
+        run: gradle assembleRelease
+
+      - name: Upload Signed APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: app-release-signed
+          path: app/build/outputs/apk/release/app-release.apk
